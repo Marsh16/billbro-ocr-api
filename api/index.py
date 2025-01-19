@@ -34,7 +34,7 @@ def generateTextInImage(processor,model,input_image,task_prompt="<s_receipt>"):
                                output_scores=True,)
     return outputs
     
-def generateOutputXML(processor,model, input_image, task_start="<s_receipt>",task_end="</s_receipt>"):
+def generateOutputXML(processor,model, input_image, task_start="<s_receipt>"):
     import re
     outputs=generateTextInImage(processor,model,input_image,task_prompt=task_start)
     sequence = processor.batch_decode(outputs.sequences)[0]
@@ -48,7 +48,7 @@ def generateOutputJson(processor,model, input_image, task_start="<s_receipt>",ta
     print(":vampire:",result)
     return result
 
-@app.route('/generate', methods=['POST'])
+@app.route('/api/generate', methods=['POST'])
 def generate_text():
     data = request.get_json()
     image_base64 = data.get('image')
