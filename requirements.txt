@@ -3,3 +3,4 @@ transformers
 Pillow
 torch
 numpy
+werkzeug==1.0.1
