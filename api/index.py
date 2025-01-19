@@ -6,50 +6,46 @@ import numpy as np
 import torch
 from transformers import DonutProcessor, VisionEncoderDecoderModel
 
-# Global variables for model and processor
-model = None
-processor = None
-
 def load_model():
     """
-    Lazy load the machine learning model to improve cold start performance
-    and reduce memory overhead during initial deployment
+    Optimized model loading with explicit configuration management
     """
-    global model, processor
-    if model is None:
-        device = "cpu"  # Vercel primarily uses CPU
-        model_name = "mychen76/invoice-and-receipts_donut_v1"
-        
-        try:
-            processor = DonutProcessor.from_pretrained(model_name)
-            model = VisionEncoderDecoderModel.from_pretrained(model_name).to(device)
-            model.eval()
-        except Exception as e:
-            print(f"Model loading error: {e}")
-            raise
+    device = "cpu"  # Vercel primarily uses CPU
+    model_name = "mychen76/invoice-and-receipts_donut_v1"
     
-    return model, processor
+    try:
+        # Explicitly set use_fast=True to address processor warning
+        processor = DonutProcessor.from_pretrained(
+            model_name, 
+            use_fast=True  # Explicitly set fast tokenizer
+        )
+        
+        # Load model with careful configuration
+        model = VisionEncoderDecoderModel.from_pretrained(
+            model_name, 
+            torch_dtype=torch.float32  # Explicit dtype specification
+        ).to(device)
+        
+        model.eval()
+        return model, processor
+    
+    except Exception as e:
+        print(f"Model loading error: {e}")
+        raise
 
 def process_image(image_base64):
     """
-    Process base64 encoded image and extract receipt data
-    
-    Args:
-        image_base64 (str): Base64 encoded image string
-    
-    Returns:
-        dict: Extracted receipt information
+    Process base64 encoded image with optimized model configuration
     """
     try:
-        # Decode base64 image
+        # Decode and prepare image
         image_data = base64.b64decode(image_base64)
         image = Image.open(io.BytesIO(image_data))
 
-        # Ensure RGB color mode
+        # Ensure RGB and resize
         if image.mode != 'RGB':
             image = image.convert('RGB')
 
-        # Resize large images to reduce processing time
         max_size = 1024
         if max(image.size) > max_size:
             ratio = max_size / max(image.size)
@@ -58,22 +54,31 @@ def process_image(image_base64):
                 Image.Resampling.LANCZOS
             )
 
-        # Load model (lazy loading)
+        # Load model with careful configuration
         model, processor = load_model()
 
         # Prepare image for processing
         image_array = np.array(image)
-        pixel_values = processor(image_array, return_tensors="pt").pixel_values
+        pixel_values = processor(
+            image_array, 
+            return_tensors="pt", 
+            # Add any specific preprocessing parameters
+            do_resize=True,
+            size={"height": 960, "width": 1280}  # Match model's expected input size
+        ).pixel_values
 
         # Prepare decoder input
         task_prompt = "<s_receipt>"
         decoder_input_ids = processor.tokenizer(
             task_prompt, 
             add_special_tokens=False,
-            return_tensors="pt"
+            return_tensors="pt",
+            # Explicit tokenizer configuration
+            truncation=True,
+            max_length=768
         )["input_ids"]
 
-        # Generate model output
+        # Generate model output with careful configuration
         with torch.no_grad():
             outputs = model.generate(
                 pixel_values,
@@ -83,7 +88,7 @@ def process_image(image_base64):
                 pad_token_id=processor.tokenizer.pad_token_id,
                 eos_token_id=processor.tokenizer.eos_token_id,
                 use_cache=True,
-                num_beams=1,
+                num_beams=2,
                 bad_words_ids=[[processor.tokenizer.unk_token_id]],
                 return_dict_in_generate=True,
                 output_scores=True,
@@ -147,4 +152,4 @@ def home():
     return "Welcome to BillBro Receipt Processing"
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=8080)
