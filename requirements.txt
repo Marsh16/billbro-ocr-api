@@ -1,7 +1,5 @@
 Flask
 transformers
 Pillow
-base64
-io
 torch
 numpy
