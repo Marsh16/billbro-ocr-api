@@ -1,5 +1,5 @@
 Flask==3.0.3
-transformers
+transformers==4.30.0
 Pillow
-torch
+torch>=1.13.1 
 numpy
