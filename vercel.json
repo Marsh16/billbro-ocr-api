@@ -1,17 +1,21 @@
 {
   "builds": [
-      {
-          "src":"api/index.py",
-          "use":"@vercel/python",
-          "config": { 
-            "maxLambdaSize": "2000mb"
-          }
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python@3.1.0",
+      "config": {
+        "maxLambdaSize": "1024mb",
+        "runtime": "python3.9"
       }
+    }
   ],
   "routes": [
-      {
-          "src":"/(.*)", 
-          "dest":"/"
-      }
-  ]
-} 
+    {
+      "src": "/(.*)",
+      "dest": "/api/index.py"
+    }
+  ],
+  "env": {
+    "TRANSFORMERS_CACHE": "/tmp/transformers_cache"
+  }
+}
