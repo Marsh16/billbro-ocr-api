@@ -1,1 +1,7 @@
-Flask==3.0.3
+Flask
+transformers
+Pillow
+base64
+io
+torch
+numpy
