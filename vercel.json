@@ -10,6 +10,5 @@
          "src": "/api/generate",
          "dest": "api/index.py"
      }
- ],
- "maxDuration": 60
+ ]
 }
