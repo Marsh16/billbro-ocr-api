@@ -1,6 +1,6 @@
-Flask==3.0.3
-transformers
-Pillow
-torch
+flask==3.0.3
+flask-limiter
+pillow
 numpy
-flask_limiter
+torch
+transformers
