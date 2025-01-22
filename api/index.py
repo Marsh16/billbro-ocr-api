@@ -4,7 +4,6 @@ import modelbit
 
 app = Flask(__name__)
 
-
 @app.route('/', methods=['GET'])
 def home():
     return "Welcome to BillBro Receipt Processing"
