@@ -1,13 +1,13 @@
 from flask import Flask
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-import torch
-from transformers import DonutProcessor, VisionEncoderDecoderModel
-from flask import request, jsonify
-import base64
-from PIL import Image
-import io
-import numpy as np
+# from flask_limiter import Limiter
+# from flask_limiter.util import get_remote_address
+# import torch
+# from transformers import DonutProcessor, VisionEncoderDecoderModel
+# from flask import request, jsonify
+# import base64
+# from PIL import Image
+# import io
+# import numpy as np
 
 app = Flask(__name__)
 # limiter = Limiter(
@@ -68,7 +68,6 @@ app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
 def home():
-    """Simple health check route"""
     return "Welcome to BillBro Receipt Processing"
 
 # @app.route('/process', methods=['POST'])
@@ -79,4 +78,4 @@ def home():
 #     return jsonify(result)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    app.run()
