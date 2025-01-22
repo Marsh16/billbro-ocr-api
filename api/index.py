@@ -19,6 +19,7 @@ def process_image():
         api_key="milHpxF4VK:msa/paZoJNdpTROEkd5OM/Zp2IlG/i7MRBCv4jjcHjjXM=",
         data=input_image
     )
+    print(result)
     return jsonify(result)
 
 if __name__ == '__main__':
