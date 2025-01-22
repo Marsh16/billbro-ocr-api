@@ -5,12 +5,21 @@ import io
 import numpy as np
 import torch
 from transformers import DonutProcessor, VisionEncoderDecoderModel, BitsAndBytesConfig
-import bitsandbytes as bnb
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
+app = Flask(__name__)
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"]
+)
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB limit
 
 model_name = "mychen76/invoice-and-receipts_donut_v1" 
 tokenizer = DonutProcessor.from_pretrained(model_name)
 model = VisionEncoderDecoderModel.from_pretrained(model_name, torch_dtype=torch.float32, 
-  max_memory='50GB')
+  max_memory='1GB')
 model.to("cuda" if torch.cuda.is_available() else "cpu")
 
 def generateTextInImage(processor,model,input_image,task_prompt="<s_receipt>"):
@@ -33,7 +42,7 @@ def generateTextInImage(processor,model,input_image,task_prompt="<s_receipt>"):
                                output_scores=True,)
     print()
     return outputs
-    
+
 def generateOutputXML(processor,model, input_image, task_start="<s_receipt>"):
     import re
     outputs=generateTextInImage(processor,model,input_image,task_prompt=task_start)
@@ -50,21 +59,13 @@ def generateOutputJson(processor,model, input_image, task_start="<s_receipt>",ta
     result=processor.token2json(xml)
     print(":vampire:",result)
     return result
-# Flask app for local development and testing
-app = Flask(__name__)
 
-@app.route('/api/generate', methods=['POST'])
-def generate_text():
-    """Local development route mirroring Vercel serverless function"""
-    data = request.get_json()
-    image_base64 = data.get('image')
-    result = generateOutputJson(tokenizer, model, image_base64)
-    return jsonify({"receipt": result})
+@app.route('/process', methods=['POST'])
+def process_image():
+    data = request.json
+    input_image = data['image']
+    result = generateOutputJson(tokenizer, model, input_image)
+    return jsonify(result)
 
-@app.route('/', methods=['GET'])
-def home():
-    """Simple health check route"""
-    return "Welcome to BillBro Receipt Processing"
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run()
