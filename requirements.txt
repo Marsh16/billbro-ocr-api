@@ -5,4 +5,4 @@ Pandas
 Pillow
 Scikit-learn
 Plotly
-Pyobjc
+pyobjc
