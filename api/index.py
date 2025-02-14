@@ -1,26 +1,26 @@
 from flask import Flask
 from flask import request, jsonify
-import modelbit
+from apple_ocr.ocr import OCR
+import base64
+from PIL import Image
+import io
+import json
 
 app = Flask(__name__)
 
-@app.route('/', methods=['GET'])
-def home():
-    return "Welcome to BillBro Receipt Processing"
-
-@app.route('/process', methods=['POST'])
+@app.route('/', methods=['POST'])
 def process_image():
     data = request.json
     input_image = data['data']
-    result = modelbit.get_inference(
-        region="us-east-1.aws",
-        workspace="marshaalexis",
-        deployment="predict_receipt",
-        api_key="milHpxF4VK:msa/paZoJNdpTROEkd5OM/Zp2IlG/i7MRBCv4jjcHjjXM=",
-        data=input_image
-    )
-    print(result)
-    return jsonify(result)
+    image_data = base64.b64decode(input_image)
+    image = Image.open(io.BytesIO(image_data))
+    ocr_instance = OCR(image=image)
+    dataframe = ocr_instance.recognize()
+    prompt = f"""
+    {dataframe}
+    """
+    print(prompt)
+    return jsonify(prompt)
 
 if __name__ == '__main__':
     app.run()
