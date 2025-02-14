@@ -1,8 +1,8 @@
 flask==3.0.3
-Torch
-NumPy
-Pandas
-Pillow
-Scikit-learn
-Plotly
+torch
+numpy
+pandas
+pillow
+scikit-learn
+plotly
 pyobjc
