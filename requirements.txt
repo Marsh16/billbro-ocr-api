@@ -6,4 +6,3 @@ Pillow
 Scikit-learn
 Plotly
 Pyobjc
-json

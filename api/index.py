@@ -4,7 +4,6 @@ from apple_ocr.ocr import OCR
 import base64
 from PIL import Image
 import io
-import json
 
 app = Flask(__name__)
 
